@@ -10,6 +10,9 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboard;
 use App\Http\Controllers\Teacher\CourseController as TeacherCourseController;
 use App\Http\Controllers\Teacher\QuizController as TeacherQuizController;
 use App\Http\Controllers\Teacher\StudentController as TeacherStudentController;
+use App\Http\Controllers\Teacher\StudentShowController as TeacherStudentShowController;
+use App\Http\Controllers\Teacher\RevenueController as TeacherRevenueController;
+use App\Http\Controllers\Teacher\StatisticsController as TeacherStatisticsController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\ForumController;
 use Illuminate\Support\Facades\Route;
@@ -120,8 +123,15 @@ Route::get('/stats/overview', [QuizStatsController::class, 'overview'])
 Route::prefix('students')->name('students.')->group(function () {
     Route::get('/',                    [TeacherStudentController::class, 'index'])->name('index');
     Route::get('/export',              [TeacherStudentController::class, 'export'])->name('export');
-    Route::get('/{enrollment}',        [TeacherStudentController::class, 'show'])->name('show');
+    Route::get('/{enrollment}',  TeacherStudentShowController::class)->name('show');
 });
+
+Route::prefix('revenues')->name('revenues.')->group(function () {
+    Route::get('/',        [TeacherRevenueController::class, 'index'])->name('index');
+    Route::get('/export',  [TeacherRevenueController::class, 'export'])->name('export');
+});
+ 
+Route::get('/statistics', [TeacherStatisticsController::class, 'index'])->name('statistics.index');
  
 
 });

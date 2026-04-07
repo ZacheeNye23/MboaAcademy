@@ -75,8 +75,8 @@
         </a>
 
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Finances</div>
-        <a href="#" class="nav-item"><span class="icon">💰</span> Revenus</a>
-        <a href="#" class="nav-item"><span class="icon">📊</span> Statistiques</a>
+        <a href="{{route ('teacher.revenues.index')}}" class="nav-item"><span class="icon">💰</span> Revenus</a>
+        <a href="{{route ('teacher.statistics.index')}}" class="nav-item"><span class="icon">📊</span> Statistiques</a>
 
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Compte</div>
         <a href="#" class="nav-item"><span class="icon">👤</span> Profil public</a>

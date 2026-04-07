@@ -165,8 +165,8 @@
             @endif
         </a>
         <div style="padding:16px 24px 8px;font-size:0.62rem;text-transform:uppercase;letter-spacing:.08rem;font-weight:700;color:rgba(255,255,255,0.2);">Finances</div>
-        <a href="#" class="nav-item"><span class="nav-icon">💰</span> Revenus</a>
-        <a href="#" class="nav-item"><span class="nav-icon">📊</span> Statistiques</a>
+        <a href="{{route ('teacher.revenues.index')}}" class="nav-item"><span class="nav-icon">💰</span> Revenus</a>
+        <a href="{{route ('teacher.statistics.index')}}" class="nav-item"><span class="nav-icon">📊</span> Statistiques</a>
     </nav>
 
     <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.05);">

@@ -67,9 +67,9 @@
         <a href="{{ route('teacher.courses.index') }}" class="nav-item"><span class="nav-icon">📚</span>Mes cours</a>
         <a href="{{ route('teacher.courses.create') }}" class="nav-item"><span class="nav-icon">➕</span>Créer un cours</a>
         <a href="{{ route('teacher.quizzes.index') }}" class="nav-item active"><span class="nav-icon">📝</span>Quiz & Exercices</a>
-        <a href="#" class="nav-item"><span class="nav-icon">👥</span>Mes apprenants</a>
+        <a href="{{route ('teacher.students.index')}}" class="nav-item"><span class="nav-icon">👥</span>Mes apprenants</a>
         <a href="#" class="nav-item"><span class="nav-icon">💬</span>Forum</a>
-        <a href="#" class="nav-item"><span class="nav-icon">💰</span>Revenus</a>
+        <a href="{{route ('teacher.revenues.index')}}" class="nav-item"><span class="nav-icon">💰</span>Revenus</a>
     </nav>
     <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.05);">
         <form method="POST" action="{{ route('logout') }}">

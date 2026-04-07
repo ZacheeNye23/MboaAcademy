@@ -88,41 +88,6 @@ class StudentController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  FICHE DÉTAIL D'UN APPRENANT
-    // ─────────────────────────────────────────────────────────────────────────
-    public function show(Enrollment $enrollment): View
-    {
-        $courseIds = Course::byTeacher(Auth::id())->pluck('id');
-        abort_unless($courseIds->contains($enrollment->course_id), 403);
-
-        $enrollment->load(['user', 'course.chapters.lessons.resources']);
-
-        // Progression par leçon
-        $completedLessonIds = LessonProgress::where('user_id', $enrollment->user_id)
-            ->where('is_completed', true)
-            ->whereIn('lesson_id', $enrollment->course->lessons->pluck('id'))
-            ->pluck('lesson_id');
-
-        // Tentatives quiz
-        $quizAttempts = QuizAttempt::with('quiz')
-            ->where('user_id', $enrollment->user_id)
-            ->whereHas('quiz', fn($q) => $q->where('course_id', $enrollment->course_id))
-            ->latest()
-            ->get();
-
-        // Toutes les inscriptions de cet apprenant dans les cours du formateur
-        $otherEnrollments = Enrollment::with('course')
-            ->where('user_id', $enrollment->user_id)
-            ->whereIn('course_id', $courseIds)
-            ->where('id', '!=', $enrollment->id)
-            ->get();
-
-        return view('teacher.students.show', compact(
-            'enrollment', 'completedLessonIds', 'quizAttempts', 'otherEnrollments'
-        ));
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
     //  EXPORT CSV
     // ─────────────────────────────────────────────────────────────────────────
     public function export(Request $request): Response
