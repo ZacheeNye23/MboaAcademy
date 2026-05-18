@@ -8,24 +8,46 @@ class StoreLessonRequest extends FormRequest
 {
     public function authorize(): bool { return Auth::user()->isTeacher(); }
 
-    public function rules(): array
+   public function rules()
+{
+    return [
+        'title' => ['required', 'string', 'max:255'],
+        'type'  => ['required', 'in:video,text,mixed'],
+
+        'content'   => ['nullable', 'string'],
+        'video_url' => ['nullable', 'url'],
+         'video'     => ['nullable', 'file', 'mimes:mp4,mov,avi,webm', 'max:512000'], // 512 Mo
+
+        'duration' => ['nullable', 'integer'],
+        'is_free'  => ['nullable', 'boolean'],
+    ];
+}
+
+    public function withValidator($validator)
     {
-        return [
-            'title'     => ['required', 'string', 'max:255'],
-            'content'   => ['nullable', 'string'],
-            'type'      => ['required', 'in:video,text,mixed'],
-            'video_url' => ['nullable', 'url', 'max:500'],
-            'video'     => [
-                'nullable',
-                'file',
-                'mimetypes:video/mp4,video/mpeg,video/quicktime,video/webm',
-                'max:512000', // 500 Mo max
-            ],
-            'duration'  => ['nullable', 'integer', 'min:1'],
-            'is_free'   => ['boolean'],
-            'order'     => ['nullable', 'integer', 'min:0'],
-        ];
+        $validator->after(function ($validator) {
+
+            if ($this->type === 'video') {
+                if (!$this->video && !$this->video_url) {
+                    $validator->errors()->add('video', 'Vidéo ou URL requise.');
+                }
+            }
+
+            if ($this->type === 'text') {
+                if (!$this->content) {
+                    $validator->errors()->add('content', 'Contenu requis.');
+                }
+            }
+
+            if ($this->type === 'mixed') {
+                if (!$this->content && !$this->video && !$this->video_url) {
+                    $validator->errors()->add('type', 'Ajoute au moins du contenu ou une vidéo.');
+                }
+            }
+
+        });
     }
+
 
     public function messages(): array
     {

@@ -67,20 +67,37 @@
 
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Apprenants</div>
         <a href="{{route('teacher.students.index')}}" class="nav-item"><span class="icon">👥</span> Mes apprenants</a>
-        <a href="#" class="nav-item">
+        {{-- Forum : lien global + liens par cours --}}
+        <a href="{{ route('teacher.forum.overview') }}" class="nav-item">
             <span class="icon">💬</span> Forum
             @if($unreadForumCount > 0)
-                <span class="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">{{ $unreadForumCount }}</span>
+                <span class="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+                    {{ $unreadForumCount }}
+                </span>
             @endif
         </a>
+        {{-- Sous-liens : un par cours ayant un forum actif --}}
+        @foreach($coursesWithForum as $cf)
+        <a href="{{ route('teacher.forum.index', $cf->slug) }}"
+           class="nav-item" style="padding:6px 20px 6px 32px;font-size:0.8rem;margin:1px 12px;">
+            <span style="width:5px;height:5px;border-radius:50%;background:{{ $cf->unread_count > 0 ? '#f87171' : 'rgba(255,255,255,0.2)' }};flex-shrink:0;"></span>
+            <span class="truncate" style="max-width:140px;">{{ Str::limit($cf->title, 20) }}</span>
+            @if($cf->unread_count > 0)
+            <span class="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+                {{ $cf->unread_count }}
+            </span>
+            @endif
+        </a>
+        @endforeach
+        
 
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Finances</div>
         <a href="{{route ('teacher.revenues.index')}}" class="nav-item"><span class="icon">💰</span> Revenus</a>
         <a href="{{route ('teacher.statistics.index')}}" class="nav-item"><span class="icon">📊</span> Statistiques</a>
 
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Compte</div>
-        <a href="#" class="nav-item"><span class="icon">👤</span> Profil public</a>
-        <a href="#" class="nav-item"><span class="icon">⚙️</span> Paramètres</a>
+        <a href="{{route ('profile.edit')}}" class="nav-item"><span class="icon">👤</span> Profil public</a>
+        <a href="{{ route ('settings.index') }}" class="nav-item"><span class="icon">⚙️</span> Paramètres</a>
     </nav>
 
     <div class="p-4 border-t border-white/5">

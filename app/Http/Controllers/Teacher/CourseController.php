@@ -106,62 +106,109 @@ class CourseController extends Controller
     }
 
     // ── Enregistrer le cours (étape 1 — infos générales) ─────────────────────
-    public function store(StoreCourseRequest $request): RedirectResponse
-    {
-        $data = $request->validated();
+  public function store(StoreCourseRequest $request): RedirectResponse
+{
+    $data = $request->validated();
 
-        // Upload thumbnail
-        if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')
-                ->store('thumbnails', 'public');
-        }
-
-        $data['user_id'] = Auth::id();
-        $data['status']  = 'draft';
-        $data['is_free'] = $request->boolean('is_free');
-
-        $course = Course::create($data);
-
-        return redirect()
-            ->route('teacher.courses.edit', $course)
-            ->with('success', 'Cours créé ! Ajoutez maintenant vos chapitres et leçons.');
+    if ($request->hasFile('thumbnail')) {
+        $data['thumbnail'] = $request->file('thumbnail')
+            ->store('thumbnails', 'public');
     }
+
+    $data['user_id'] = Auth::id();
+    $data['status']  = 'draft';
+    $data['is_free'] = $request->boolean('is_free');
+
+    // Si gratuit, forcer price à 0
+    if ($data['is_free']) {
+        $data['price'] = 0;
+    }
+
+    $course = Course::create($data);
+
+    return redirect()
+        ->route('teacher.courses.edit', $course)
+        ->with('success', 'Cours créé ! Ajoutez maintenant vos chapitres et leçons.');
+}
+
 
     // ── Formulaire d'édition (étape 2 — chapitres & leçons) ──────────────────
     public function edit(Course $course): View
-    {
-        $this->authorizeTeacher($course);
-        $course->load('chapters.lessons.resources');
+{
+    $this->authorizeTeacher($course);
 
-        return view('teacher.courses.edit', [
-            'course'     => $course,
-            'categories' => self::CATEGORIES,
-            'levels'     => self::LEVELS,
-            'languages'  => self::LANGUAGES,
-        ]);
-    }
+    $course->load('chapters.lessons');
+
+    $chapters = $course->chapters->map(function ($c) {
+        return [
+            'id'       => $c->id,
+            'title'    => $c->title,
+            'order'    => $c->order,
+            'open'     => true,
+            'editing'  => false,
+            'editTitle'=> $c->title,
+            'lessons'  => $c->lessons->map(function ($l) {
+                return [
+                    'id'       => $l->id,
+                    'title'    => $l->title,
+                    'type'     => $l->type,
+                    'duration' => $l->duration_formatted,
+                    'is_free'  => $l->is_free,
+                    'video_path'=> $l->video_path,
+                    'video_url' => $l->video_url,
+                ];
+            })->values(),
+            'newLesson'=> [
+                'title'          => '',
+                'type'           => 'video',
+                'content'        => '',
+                'video_url'      => '',
+                'duration'       => '',
+                'is_free'        => false,
+                'videoFile'      => null,
+                'uploadProgress' => 0,
+                'uploading'      => false,
+                'error'          => '',
+            ],
+        ];
+    })->values();
+
+    return view('teacher.courses.edit', [
+        'course'     => $course,
+        'chaptersJson' => $chapters,
+        'categories' => self::CATEGORIES,
+        'levels'     => self::LEVELS,
+        'languages'  => self::LANGUAGES,
+    ]);
+}
 
     // ── Mettre à jour les infos du cours ──────────────────────────────────────
-    public function update(StoreCourseRequest $request, Course $course): RedirectResponse
-    {
-        $this->authorizeTeacher($course);
-        $data = $request->validated();
+   public function update(StoreCourseRequest $request, Course $course): RedirectResponse
+{
+    $this->authorizeTeacher($course);
+    $data = $request->validated();
 
-        if ($request->hasFile('thumbnail')) {
-            if ($course->thumbnail) Storage::disk('public')->delete($course->thumbnail);
-            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
-        }
-
-        $data['is_free'] = $request->boolean('is_free');
-        $course->update($data);
-
-        return back()->with('success', 'Informations du cours mises à jour !');
+    if ($request->hasFile('thumbnail')) {
+        if ($course->thumbnail) Storage::disk('public')->delete($course->thumbnail);
+        $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
     }
+
+    $data['is_free'] = $request->boolean('is_free');
+
+    // Si gratuit, forcer price à 0
+    if ($data['is_free']) {
+        $data['price'] = 0;
+    }
+
+    $course->update($data);
+
+    return back()->with('success', 'Informations du cours mises à jour !');
+}
 
     // ── Soumettre pour validation (draft → pending) ───────────────────────────
     public function submit(Course $course): RedirectResponse
     {
-        $this->authorizeTeacher($course);
+        $this->authorizeTeacher($course); 
 
         if ($course->status !== 'draft') {
             return back()->with('error', 'Ce cours ne peut pas être soumis dans son état actuel.');

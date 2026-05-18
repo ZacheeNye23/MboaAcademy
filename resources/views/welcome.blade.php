@@ -1,13 +1,10 @@
-{{-- resources/views/welcome.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'MboaAcademy — Apprends. Grandis. Rayonne.')
 
 @section('content')
 
-{{-- ═══════════════════════════════════════════
-    HERO
-═══════════════════════════════════════════ --}}
+{{-- HERO--}}
 <section class="relative min-h-screen bg-dark flex items-center overflow-hidden">
 
     {{-- Fond radial --}}
@@ -55,10 +52,10 @@
                    class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-mid to-green-bright text-white font-semibold rounded-full shadow-xl shadow-green-bright/30 hover:-translate-y-0.5 hover:shadow-green-bright/50 transition-all duration-200">
                     🚀 Commencer gratuitement
                 </a>
-                <a href="#courses"
+                <button onclick="document.getElementById('demoModal').classList.remove('hidden')"
                    class="inline-flex items-center gap-2 px-8 py-4 border border-white/20 text-white/80 font-medium rounded-full hover:border-gold hover:text-gold transition-all duration-200">
                     ▶ Voir une démo
-                </a>
+                </button>
             </div>
 
             {{-- Stats --}}
@@ -76,7 +73,7 @@
             </div>
         </div>
 
-        {{-- Dashboard Preview (caché sur mobile) --}}
+        {{-- Dashboard Preview --}}
         <div class="hidden lg:flex w-1/2 justify-center items-center pl-10 py-20 animate-fadeIn">
             <div class="w-full max-w-md bg-white/[0.04] border border-green-bright/20 rounded-2xl overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.5)]">
 
@@ -121,9 +118,7 @@
 </section>
 
 
-{{-- ═══════════════════════════════════════════
-    FEATURES
-═══════════════════════════════════════════ --}}
+{{-- FEATURES --}}
 <section id="features" class="py-24 px-6 lg:px-10 bg-cream relative"
          style="background-image: repeating-linear-gradient(45deg, rgba(232,184,75,0.04) 0px, rgba(232,184,75,0.04) 1px, transparent 1px, transparent 40px),
                                   repeating-linear-gradient(-45deg, rgba(37,194,110,0.04) 0px, rgba(37,194,110,0.04) 1px, transparent 1px, transparent 40px);">
@@ -166,9 +161,7 @@
 </section>
 
 
-{{-- ═══════════════════════════════════════════
-    COURS
-═══════════════════════════════════════════ --}}
+{{--COURS--}}
 <section id="courses" class="py-24 px-6 lg:px-10 bg-dark relative overflow-hidden">
     {{-- Glow déco --}}
     <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none"
@@ -269,7 +262,7 @@
         </div>
 
         <div class="text-center mt-10">
-            <a href="#"
+            <a href="{{ route('register') }}"
                class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-mid to-green-bright text-white font-semibold rounded-full shadow-xl shadow-green-bright/30 hover:-translate-y-0.5 transition-all duration-200">
                 Voir tous les cours →
             </a>
@@ -278,9 +271,7 @@
 </section>
 
 
-{{-- ═══════════════════════════════════════════
-    STATS
-═══════════════════════════════════════════ --}}
+{{-- STATS --}}
 <section class="py-20 px-6 lg:px-10 relative overflow-hidden"
          style="background: linear-gradient(135deg, #0d5c2e, #1a8a47);">
     <div class="absolute inset-0 pointer-events-none"
@@ -307,9 +298,7 @@
 </section>
 
 
-{{-- ═══════════════════════════════════════════
-    TÉMOIGNAGES
-═══════════════════════════════════════════ --}}
+{{-- TÉMOIGNAGES--}}
 <section id="temoignages" class="py-24 px-6 lg:px-10 bg-cream">
     <div class="max-w-7xl mx-auto">
 
@@ -382,9 +371,8 @@
 </section>
 
 
-{{-- ═══════════════════════════════════════════
-    CTA FINAL
-═══════════════════════════════════════════ --}}
+
+    {{-- CTA --}}
 <section class="py-28 px-6 lg:px-10 bg-dark text-center relative overflow-hidden">
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div class="w-[600px] h-[600px] rounded-full"
@@ -402,7 +390,7 @@
                class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-mid to-green-bright text-white font-semibold rounded-full shadow-xl shadow-green-bright/30 hover:-translate-y-0.5 hover:shadow-green-bright/50 transition-all duration-200">
                 🚀 Créer mon compte gratuit
             </a>
-            <a href="#courses"
+            <a href="{{ route('register') }}"
                class="inline-flex items-center gap-2 px-8 py-4 border border-white/20 text-white/80 font-medium rounded-full hover:border-gold hover:text-gold transition-all duration-200">
                 Voir le catalogue →
             </a>
@@ -410,13 +398,195 @@
     </div>
 </section>
 
+
+{{--
+     MODAL DÉMO VIDÉO
+     → Remplace VIDEO_ID dans data-src par l'ID YouTube
+       de ta vraie vidéo de démo (ex: dQw4w9WgXcQ)--}}
+<div id="demoModal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+
+    <div class="relative w-full max-w-3xl bg-dark rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+
+        {{-- En-tête --}}
+        <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.08]">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-green-bright/15 border border-green-bright/30 flex items-center justify-center text-green-bright text-xs">▶</span>
+                <span class="text-white font-semibold text-sm">Découvrez MboaAcademy en 2 minutes</span>
+            </div>
+            <button onclick="closeDemoModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all text-base">
+                ✕
+            </button>
+        </div>
+
+        {{-- Vidéo 16:9 --}}
+        <div class="relative w-full bg-black" style="padding-bottom: 56.25%;">
+            <iframe id="demoIframe"
+                    class="absolute inset-0 w-full h-full"
+                    src=""
+                    data-src="https://www.youtube.com/embed/VIDEO_ID?autoplay=1&rel=0&modestbranding=1"
+                    title="Démo MboaAcademy"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+        </div>
+
+        {{-- Pied de modal --}}
+        <div class="px-6 py-4 border-t border-white/[0.08] flex items-center justify-between">
+            <span class="text-white/40 text-xs">Aucun compte requis pour regarder</span>
+            <a href="{{ route('register') }}"
+               class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-green-mid to-green-bright text-white text-xs font-semibold rounded-full hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-green-bright/20">
+                🚀 S'inscrire gratuitement
+            </a>
+        </div>
+    </div>
+</div>
+
+
+{{-- FOOTER STATIQUE --}}
+<footer class="bg-black border-t border-white/[0.07]">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-16 pb-10">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+
+            {{-- Brand --}}
+            <div>
+                <a href="{{ route('welcome') }}" class="inline-block mb-4">
+                    <span class="font-playfair text-xl font-black text-white">Mboa<span class="text-green-bright">Academy</span></span>
+                </a>
+                <p class="text-white/40 text-sm leading-relaxed mb-6">
+                    La plateforme e-learning pensée pour les apprenants africains. Apprends à ton rythme, avec des formateurs de qualité.
+                </p>
+              <div class="flex gap-3">
+
+    {{-- LinkedIn --}}
+    <a href="https://www.linkedin.com/in/zachee-nyemeg-90a625373"
+       target="_blank"
+       rel="noopener"
+       aria-label="LinkedIn"
+       class="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-green-bright/40 hover:bg-green-bright/10 transition-all">
+
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+            <circle cx="4" cy="4" r="2"/>
+        </svg>
+    </a>
+
+    {{-- Gmail --}}
+    <a href="https://Zacheenyemeg23@gmail.com"
+       aria-label="Gmail"
+       class="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-red-400/40 hover:bg-red-400/10 transition-all">
+
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/>
+        </svg>
+    </a>
+
+    {{-- GitHub --}}
+    <a href="https://github.com/ZacheeNye23"
+       target="_blank"
+       rel="noopener"
+       aria-label="GitHub"
+       class="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all">
+
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M12 .5a12 12 0 00-3.79 23.4c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.41-4.04-1.41a3.18 3.18 0 00-1.34-1.76c-1.1-.75.08-.74.08-.74a2.5 2.5 0 011.83 1.23 2.56 2.56 0 003.5 1 2.57 2.57 0 01.76-1.6c-2.66-.3-5.46-1.33-5.46-5.93a4.64 4.64 0 011.24-3.22 4.3 4.3 0 01.12-3.18s1-.32 3.3 1.23a11.5 11.5 0 016 0c2.28-1.55 3.3-1.23 3.3-1.23a4.3 4.3 0 01.12 3.18 4.64 4.64 0 011.24 3.22c0 4.61-2.8 5.62-5.47 5.92a2.88 2.88 0 01.82 2.24v3.32c0 .32.21.7.83.58A12 12 0 0012 .5z"/>
+        </svg>
+    </a>
+
+    {{-- WhatsApp --}}
+    <a href="https://wa.me/237687085395"
+       target="_blank"
+       rel="noopener"
+       aria-label="WhatsApp"
+       class="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-green-bright/40 hover:bg-green-bright/10 transition-all">
+
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M11.997 2C6.477 2 2 6.477 2 12c0 1.99.58 3.848 1.585 5.408L2 22l4.714-1.547A9.954 9.954 0 0011.997 22C17.52 22 22 17.523 22 12S17.52 2 11.997 2z"/>
+        </svg>
+    </a>
+
+</div>
+            </div>
+
+            {{-- Plateforme --}}
+            <div>
+                <h4 class="text-white text-xs font-bold mb-5 uppercase tracking-widest">Plateforme</h4>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="{{ route('student.courses.index') }}" class="text-white/45 hover:text-green-bright transition-colors">Catalogue des cours</a></li>
+                    <li><a href="{{ route('about') }}"         class="text-white/45 hover:text-green-bright transition-colors">À propos</a></li>
+                    <li>
+                        <button onclick="openDemoModal()"
+                                class="text-white/45 hover:text-green-bright transition-colors text-sm text-left">
+                            Voir la démo ▶
+                        </button>
+                    </li>
+                    <li><a href="{{ route('register') }}" class="text-white/45 hover:text-green-bright transition-colors">S'inscrire gratuitement</a></li>
+                    <li><a href="{{ route('login') }}"    class="text-white/45 hover:text-green-bright transition-colors">Se connecter</a></li>
+                </ul>
+            </div>
+
+            {{-- Formateurs --}}
+            <div>
+                <h4 class="text-white text-xs font-bold mb-5 uppercase tracking-widest">Formateurs</h4>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="#" class="text-white/45 hover:text-green-bright transition-colors">Devenir formateur</a></li>
+                    <li><a href="#" class="text-white/45 hover:text-green-bright transition-colors">Créer un cours</a></li>
+                    <li><a href="#" class="text-white/45 hover:text-green-bright transition-colors">Règles de publication</a></li>
+                    <li><a href="#" class="text-white/45 hover:text-green-bright transition-colors">Centre d'aide formateurs</a></li>
+                </ul>
+            </div>
+
+            {{-- Contact --}}
+            <div>
+                <h4 class="text-white text-xs font-bold mb-5 uppercase tracking-widest">Contact</h4>
+                <ul class="space-y-3 text-sm">
+                    <li>
+                        <a href="mailto:contact@mboaacademy.com"
+                           class="flex items-center gap-2 text-white/45 hover:text-green-bright transition-colors">
+                            <span>✉️</span> contact@mboaacademy.com
+                        </a>
+                    </li>
+                    <li class="flex items-center gap-2 text-white/45">
+                        <span>📍</span> Yaoundé, Cameroun
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center gap-2 text-white/45 hover:text-green-bright transition-colors">
+                            <span>💬</span> Support en ligne
+                        </a>
+                    </li>
+                </ul>
+                <div class="mt-6 inline-flex items-center gap-2 px-3 py-1.5 bg-green-bright/[0.07] border border-green-bright/20 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-bright animate-pulse"></span>
+                    <span class="text-[10px] text-green-bright font-semibold uppercase tracking-wider">Paiements sécurisés</span>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- Barre basse --}}
+        <div class="border-t border-white/[0.07] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-white/30 text-xs">© {{ date('Y') }} MboaAcademy. Tous droits réservés.</p>
+            <div class="flex flex-wrap gap-5 text-xs">
+                <a href="#" class="text-white/30 hover:text-white/60 transition-colors">Politique de confidentialité</a>
+                <a href="#" class="text-white/30 hover:text-white/60 transition-colors">Conditions d'utilisation</a>
+                <a href="#" class="text-white/30 hover:text-white/60 transition-colors">Cookies</a>
+            </div>
+        </div>
+
+    </div>
+</footer>
+
 @endsection
 
 @push('scripts')
 <script>
-    // Scroll reveal
+    // ── Scroll reveal ────────────────────────────────────────
     const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
+    const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry, i) => {
             if (entry.isIntersecting) {
                 setTimeout(() => {
@@ -426,12 +596,38 @@
             }
         });
     }, { threshold: 0.1 });
-
     reveals.forEach(el => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(24px)';
         el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
-        observer.observe(el);
+        revealObserver.observe(el);
+    });
+
+    // ── Modal démo ───────────────────────────────────────────
+    function openDemoModal() {
+        const iframe = document.getElementById('demoIframe');
+        // Charge le src seulement à l'ouverture (évite l'autoplay en fond)
+        if (!iframe.src || iframe.src === window.location.href) {
+            iframe.src = iframe.dataset.src;
+        }
+        document.getElementById('demoModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDemoModal() {
+        document.getElementById('demoModal').classList.add('hidden');
+        document.getElementById('demoIframe').src = ''; // Stoppe la vidéo
+        document.body.style.overflow = '';
+    }
+
+    // Fermer au clic sur l'overlay
+    document.getElementById('demoModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDemoModal();
+    });
+
+    // Fermer via Échap
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeDemoModal();
     });
 </script>
 @endpush

@@ -30,6 +30,16 @@ class Enrollment extends Model {
             'progress_percent' => $percent,
             'completed_at'     => $percent === 100 ? now() : null,
         ]);
+ 
+        // ✅ Générer automatiquement le certificat si cours terminé
+        if ($percent === 100) {
+            \App\Http\Controllers\Student\CertificateController::generateFor(
+                $this->user_id,
+                $this->course_id
+            );
+        }
+ 
         return $percent;
     }
 }
+ 

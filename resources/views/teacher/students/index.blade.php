@@ -152,7 +152,7 @@
         <a href="{{ route('teacher.courses.create') }}" class="nav-item"><span class="nav-icon">➕</span>Créer un cours</a>
         <a href="{{ route('teacher.quizzes.index') }}" class="nav-item"><span class="nav-icon">📝</span>Quiz & Exercices</a>
         <a href="{{ route('teacher.students.index') }}" class="nav-item active"><span class="nav-icon">👥</span>Mes apprenants</a>
-        <a href="#" class="nav-item"><span class="nav-icon">💬</span>Forum</a>
+        <a href="{{ route('teacher.forum.overview') }}" class="nav-item"><span class="nav-icon">💬</span>Forum</a>
         <a href="{{route ('teacher.revenues.index')}}" class="nav-item"><span class="nav-icon">💰</span>Revenus</a>
     </nav>
 

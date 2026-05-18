@@ -38,6 +38,10 @@ class User extends Authenticatable
     {
         return strtoupper(substr($this->first_name, 0, 1) . substr($this->last_name, 0, 1));
     }
+    public function getNameAttribute()
+{
+    return $this->first_name . ' ' . $this->last_name;
+}
 
     public function getAvatarUrlAttribute(): string
     {
@@ -75,6 +79,7 @@ class User extends Authenticatable
     public function streak()          { return $this->hasOne(UserStreak::class); }
     public function forumThreads()    { return $this->hasMany(ForumThread::class); }
     public function forumReplies()    { return $this->hasMany(ForumReply::class); }
+    public function revenueRecords() { return $this->hasMany(RevenueRecord::class, 'teacher_id'); }
 
     public function enrolledCourses()
     {

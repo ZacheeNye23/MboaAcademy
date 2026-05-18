@@ -66,12 +66,12 @@
             @endif
         </a>
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Communauté</div>
-        <a href="#" class="nav-item"><span class="icon">💬</span> Forum</a>
+        <a href="{{ route('student.forum.overview') }}" class="nav-item"><span class="icon">💬</span> Forum</a>
         <a href="{{ route('student.badges.index') }}" class="nav-item"><span class="icon">🏆</span> Badges</a>
         <a href="{{ route('student.certificates.index') }}" class="nav-item"><span class="icon">🎓</span> Certificats</a>
         <div class="px-6 mt-4 mb-2 text-[10px] uppercase tracking-widest font-bold" style="color:rgba(255,255,255,0.2)">Compte</div>
-        <a href="#" class="nav-item"><span class="icon">👤</span> Profil</a>
-        <a href="#" class="nav-item"><span class="icon">⚙️</span> Paramètres</a>
+        <a href="{{ route ('profile.edit') }}" class="nav-item"><span class="icon">👤</span> Profil</a>
+        <a href="{{route ('settings.index')}}" class="nav-item"><span class="icon">⚙️</span> Paramètres</a>
     </nav>
 
     <div class="p-4 border-t border-white/5">

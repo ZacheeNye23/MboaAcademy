@@ -4,114 +4,168 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\ForumReply;
 use App\Models\ForumThread;
 use App\Models\RevenueRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     public function index(): View
     {
-        $teacher = Auth::user();
+        $teacher   = Auth::user();
+        $courseIds = Course::byTeacher($teacher->id)->pluck('id');
 
-        // Cours du formateur
+        // ── Variables $stats (KPIs dashboard) ────────────────────────────────
+        $stats = [
+            'total_students' => Enrollment::whereIn('course_id', $courseIds)
+                                    ->distinct('user_id')->count('user_id'),
+            'total_courses'  => Course::byTeacher($teacher->id)->count(),
+            'published'      => Course::byTeacher($teacher->id)->where('status', 'published')->count(),
+            'drafts'         => Course::byTeacher($teacher->id)->where('status', 'draft')->count(),
+            'avg_rating'     => round(
+                \App\Models\CourseReview::whereIn('course_id', $courseIds)->avg('rating') ?? 0, 1
+            ),
+            'total_reviews'  => \App\Models\CourseReview::whereIn('course_id', $courseIds)->count(),
+        ];
+
+        // ── Variables $revenues ───────────────────────────────────────────────
+        $thisMonth  = (int) RevenueRecord::where('teacher_id', $teacher->id)->completed()
+                            ->whereMonth('paid_at', now()->month)
+                            ->whereYear('paid_at',  now()->year)
+                            ->sum('net_amount');
+        $lastMonth  = (int) RevenueRecord::where('teacher_id', $teacher->id)->completed()
+                            ->whereMonth('paid_at', now()->subMonth()->month)
+                            ->whereYear('paid_at',  now()->subMonth()->year)
+                            ->sum('net_amount');
+        $variation  = $lastMonth > 0 ? round(($thisMonth - $lastMonth) / $lastMonth * 100, 1) : 0;
+
+        // monthly[1..12] → pour le mini graphe
+        $monthly = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $monthly[$m] = (int) RevenueRecord::where('teacher_id', $teacher->id)->completed()
+                ->whereMonth('paid_at', $m)
+                ->whereYear('paid_at', now()->year)
+                ->sum('net_amount');
+        }
+
+        $revenues = [
+            'this_month' => $thisMonth,
+            'last_month' => $lastMonth,
+            'variation'  => $variation,
+            'total'      => (int) RevenueRecord::where('teacher_id', $teacher->id)->completed()->sum('net_amount'),
+            'monthly'    => $monthly,
+        ];
+
+        // ── $courses : liste des cours pour la section "Mes cours" du dashboard ─
         $courses = Course::byTeacher($teacher->id)
             ->withCount('enrollments')
-            ->with(['reviews', 'chapters.lessons'])
+            ->withAvg('reviews', 'rating')
+            ->withCount(['lessons as total_lessons'])
             ->latest()
+            ->take(5)
+            ->get();
+        $topCourses = Course::byTeacher($teacher->id)
+    ->withCount('enrollments')
+    ->orderByDesc('enrollments_count')
+    ->take(5)
+    ->get();
+
+        // ── $recentStudents ───────────────────────────────────────────────────
+        $recentStudents = Enrollment::with(['user', 'course'])
+            ->whereIn('course_id', $courseIds)
+            ->latest('enrolled_at')
+            ->take(6)
             ->get();
 
-        $courseIds = $courses->pluck('id');
+        // ── Forum : threads récents ───────────────────────────────────────────
+        $forumThreads = ForumThread::with(['author', 'course', 'replies'])
+            ->withCount('replies')
+            ->whereIn('course_id', $courseIds)
+            ->latest()
+            ->take(5)
+            ->get();
 
-        // Stats globales
-        $stats = [
-            'total_students' => Enrollment::whereIn('course_id', $courseIds)->distinct('user_id')->count('user_id'),
-            'total_courses'  => $courses->count(),
-            'published'      => $courses->where('status', 'published')->count(),
-            'drafts'         => $courses->where('status', 'draft')->count(),
-            'pending'        => $courses->where('status', 'pending')->count(),
-            'avg_rating'     => round($courses->flatMap->reviews->avg('rating') ?? 0, 1),
-            'total_reviews'  => $courses->flatMap->reviews->count(),
-        ];
+        // ── Unread count ──────────────────────────────────────────────────────
+        // Thread non lu = a des réponses d'apprenants ET la dernière réponse n'est pas du formateur
+        $unreadForumCount = ForumThread::whereIn('course_id', $courseIds)
+            ->whereHas('replies', fn($q) => $q->where('user_id', '!=', $teacher->id))
+            ->get()
+            ->filter(function ($thread) use ($teacher) {
+                $lastReply = $thread->replies()->latest()->first();
+                return $lastReply && $lastReply->user_id !== $teacher->id;
+            })
+            ->count();
 
-        // Revenus
-        $revenues = [
-            'this_month' => RevenueRecord::where('teacher_id', $teacher->id)->completed()->thisMonth()->sum('net_amount'),
-            'last_month' => RevenueRecord::where('teacher_id', $teacher->id)->completed()
-                ->whereMonth('paid_at', now()->subMonth()->month)->whereYear('paid_at', now()->subMonth()->year)
-                ->sum('net_amount'),
-            'total'      => RevenueRecord::where('teacher_id', $teacher->id)->completed()->sum('net_amount'),
-            'monthly'    => RevenueRecord::where('teacher_id', $teacher->id)->completed()
-                ->whereYear('paid_at', now()->year)
-                ->selectRaw('MONTH(paid_at) as month, SUM(net_amount) as total')
-                ->groupBy('month')->orderBy('month')
-                ->pluck('total', 'month')->toArray(),
-        ];
+        // ── Cours pour le menu sidebar forum (publiés avec des threads) ───────
+        // Utilisé dans le @foreach de la sidebar : route('teacher.forum.index', $course)
+        $coursesWithForum = Course::byTeacher($teacher->id)
+            ->where('status', 'published')
+            ->whereHas('forumThreads')
+            ->get(['id', 'title', 'slug'])
+            ->map(function ($course) use ($teacher) {
+                $course->unread_count = ForumThread::where('course_id', $course->id)
+                    ->whereHas('replies', fn($q) => $q->where('user_id', '!=', $teacher->id))
+                    ->get()
+                    ->filter(function ($t) use ($teacher) {
+                        $last = $t->replies()->latest()->first();
+                        return $last && $last->user_id !== $teacher->id;
+                    })
+                    ->count();
+                return $course;
+            })
+            ->sortByDesc('unread_count')
+            ->values();
 
-        $revenues['variation'] = $revenues['last_month'] > 0
-            ? round((($revenues['this_month'] - $revenues['last_month']) / $revenues['last_month']) * 100, 1)
-            : 0;
-
-        // Apprenants récents
-        $recentStudents = Enrollment::with(['user', 'course'])
-            ->whereIn('course_id', $courseIds)->latest()->take(8)->get();
-
-        // Forum
-        $forumThreads = ForumThread::with(['author', 'replies', 'course'])
-            ->whereIn('course_id', $courseIds)->latest()->take(5)->get();
-
-        $unreadForumCount = $forumThreads->filter(fn($t) =>
-            $t->replies->where('user_id', '!=', $teacher->id)->count() > 0
-        )->count();
-
-        // Top cours
-        $topCourses = $courses->sortByDesc('enrollments_count')->take(3);
-
-        // Activité récente
-        $recentActivity = $this->getRecentActivity($teacher->id, $courseIds);
+        // ── Activité récente ──────────────────────────────────────────────────
+        $recentActivity = $this->buildActivity($courseIds, $teacher->id);
 
         return view('teacher.dashboard', compact(
-            'teacher', 'courses', 'stats', 'revenues',
-            'recentStudents', 'forumThreads', 'unreadForumCount',
-            'topCourses', 'recentActivity'
+            'teacher',
+            'stats',
+            'revenues',
+            'courses',
+            'topCourses',
+            'recentStudents',
+            'forumThreads',
+            'unreadForumCount',
+            'coursesWithForum',
+            'recentActivity'
         ));
     }
 
-    private function getRecentActivity($teacherId, $courseIds): array
+    private function buildActivity($courseIds, int $teacherId): array
     {
-        $activities = [];
+        $feed = [];
 
-        Enrollment::with(['user', 'course'])->whereIn('course_id', $courseIds)->latest()->take(5)->get()
-            ->each(fn($e) => $activities[] = [
-                'icon'   => '🆕', 'action' => 'Nouvelle inscription',
-                'detail' => ($e->user->full_name ?? '—').' → '.($e->course->title ?? '—'),
-                'time'   => $e->created_at, 'color' => '#25c26e',
-            ]);
+        foreach (Enrollment::with(['user', 'course'])
+            ->whereIn('course_id', $courseIds)
+            ->latest()->take(5)->get() as $e) {
+            $feed[] = [
+                'icon'   => '🎓',
+                'color'  => '#25c26e',
+                'action' => 'Nouvelle inscription',
+                'detail' => ($e->user->full_name ?? '?') . ' → ' . Str::limit($e->course->title ?? '', 25),
+                'time'   => $e->created_at,
+            ];
+        }
 
-        Enrollment::with(['user', 'course'])->whereIn('course_id', $courseIds)
-            ->whereNotNull('completed_at')->latest('completed_at')->take(3)->get()
-            ->each(fn($e) => $activities[] = [
-                'icon'   => '🎓', 'action' => 'Cours terminé',
-                'detail' => ($e->user->full_name ?? '—').' a terminé '.($e->course->title ?? '—'),
-                'time'   => $e->completed_at, 'color' => '#3b82f6',
-            ]);
+        foreach (ForumReply::with(['author', 'thread.course'])
+            ->whereHas('thread', fn($q) => $q->whereIn('course_id', $courseIds))
+            ->where('user_id', '!=', $teacherId)
+            ->latest()->take(5)->get() as $r) {
+            $feed[] = [
+                'icon'   => '💬',
+                'color'  => '#a78bfa',
+                'action' => 'Réponse forum',
+                'detail' => ($r->author->full_name ?? '?') . ' sur « ' . Str::limit($r->thread->title ?? '', 22) . ' »',
+                'time'   => $r->created_at,
+            ];
+        }
 
-        \App\Models\CourseReview::with(['student','course'])->whereIn('course_id', $courseIds)->latest()->take(3)->get()
-            ->each(fn($r) => $activities[] = [
-                'icon'   => '⭐', 'action' => "Avis {$r->rating}/5",
-                'detail' => ($r->student->full_name ?? '—').' sur '.($r->course->title ?? '—'),
-                'time'   => $r->created_at, 'color' => '#e8b84b',
-            ]);
-
-        RevenueRecord::where('teacher_id', $teacherId)->latest('paid_at')->take(3)->get()
-            ->each(fn($r) => $activities[] = [
-                'icon'   => '💰', 'action' => 'Paiement reçu',
-                'detail' => $r->net_amount_formatted,
-                'time'   => $r->paid_at, 'color' => '#e8b84b',
-            ]);
-
-        usort($activities, fn($a, $b) => $b['time'] <=> $a['time']);
-        return array_slice($activities, 0, 10);
+        usort($feed, fn($a, $b) => $b['time'] <=> $a['time']);
+        return array_slice($feed, 0, 8);
     }
 }

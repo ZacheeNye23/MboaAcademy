@@ -1,60 +1,82 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    // ── Affichage profil ─────────────────────────────────
+    public function edit()
     {
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => Auth::user()
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    // ── Mise à jour profil ───────────────────────────────
+    public function update(Request $request)
     {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+      $data = $request->validate([
+    'first_name' => ['required', 'string'],
+    'last_name'  => ['required', 'string'],
+    'bio'        => ['nullable', 'string'],
+    'github'     => ['nullable', 'url'],
+    'linkedin'   => ['nullable', 'url'],
+    'portfolio'  => ['nullable', 'url'],
+]);
+
+$user->update($data);
+
+        return back()->with('success', 'Profil mis à jour ✅');
+    }
+
+    // ── Upload avatar ───────────────────────────────────
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048']
+        ]);
+
+        $user = Auth::user();
+
+        // Supprimer ancien avatar
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
         }
 
-        $request->user()->save();
+        // Stocker nouveau
+        $path = $request->file('avatar')->store('avatars', 'public');
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
+        $user->update(['avatar' => $path]);
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+        return back()->with('success', 'Photo mise à jour 📸');
+    } // ── Mot de passe ──
+    public function password(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        $request->validate([
+            'current_password' => ['required'],
+            'password' => ['required', 'confirmed', 'min:6'],
         ]);
 
-        $user = $request->user();
+        $user = Auth::user();
 
-        Auth::logout();
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors([
+                'current_password' => 'Mot de passe incorrect'
+            ]);
+        }
 
-        $user->delete();
+        $user->update([
+            'password' => bcrypt($request->password)
+        ]);
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return back()->with('success', 'Mot de passe mis à jour 🔒');
     }
+
+
 }

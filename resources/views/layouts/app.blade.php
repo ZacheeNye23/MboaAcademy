@@ -35,12 +35,12 @@
 
 
     {{-- Footer (caché sur login/register ou si forcé) --}}
-    @if (
+    {{-- @if (
         !in_array(Route::currentRouteName(), ['login', 'register']) 
         && !isset($hideFooter)
     )
         @include('components.footer')
-    @endif
+    @endif --}}
 
 
     {{-- Scripts spécifiques à la page --}}

@@ -545,21 +545,25 @@
 function quizEdit() {
     return {
         tab: 'questions',
-        questions: @json($quiz->questions->map(fn($q) => [
-            'id'          => $q->id,
-            'question'    => $q->question,
-            'type'        => $q->type,
-            'explanation' => $q->explanation,
-            'points'      => $q->points,
-            'order'       => $q->order,
-            'open'        => true,
-            'answers'     => $q->answers->map(fn($a) => [
-                'id'          => $a->id,
-                'answer_text' => $a->answer_text,
-                'is_correct'  => $a->is_correct,
-                'order'       => $a->order,
-            ])->values()->all(),
-        ])->values()->all()),
+        @php
+    $questionsData = $quiz->questions->map(fn($q) => [
+        'id'          => $q->id,
+        'question'    => $q->question,
+        'type'        => $q->type,
+        'explanation' => $q->explanation,
+        'points'      => $q->points,
+        'order'       => $q->order,
+        'open'        => true,
+        'answers'     => $q->answers->map(fn($a) => [
+            'id'          => $a->id,
+            'answer_text' => $a->answer_text,
+            'is_correct'  => $a->is_correct,
+            'order'       => $a->order,
+        ])->values()->all(),
+    ])->values()->all();
+@endphp
+
+questions: @json($questionsData),
 
         // Formulaire nouvelle question
         newQ: {

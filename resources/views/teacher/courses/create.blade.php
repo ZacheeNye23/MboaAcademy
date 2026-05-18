@@ -288,7 +288,6 @@
                 <div x-show="isFree" x-transition style="padding:16px;border-radius:12px;text-align:center;background:rgba(37,194,110,0.05);border:1px solid rgba(37,194,110,0.12);">
                     <div style="font-size:1.5rem;margin-bottom:6px;">🎁</div>
                     <div style="font-size:0.85rem;color:rgba(255,255,255,0.55);">Ce cours sera accessible gratuitement à tous les apprenants.</div>
-                    <input type="hidden" name="price" value="0">
                 </div>
             </div>
 

@@ -267,7 +267,6 @@
                                     <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0.8rem;color:rgba(255,255,255,0.4);">XAF</span>
                                 </div>
                             </div>
-                            <input x-show="editFree" type="hidden" name="price" value="0">
                         </div>
                     </div>
                 </div>
@@ -520,35 +519,7 @@ function courseEdit() {
         editFree: {{ $course->is_free ? 'true' : 'false' }},
         editPrice: {{ $course->price }},
 
-        chapters: @json($course->chapters->map(fn($c) => [
-            'id'       => $c->id,
-            'title'    => $c->title,
-            'order'    => $c->order,
-            'open'     => true,
-            'editing'  => false,
-            'editTitle'=> $c->title,
-            'lessons'  => $c->lessons->map(fn($l) => [
-                'id'       => $l->id,
-                'title'    => $l->title,
-                'type'     => $l->type,
-                'duration' => $l->duration_formatted,
-                'is_free'  => $l->is_free,
-                'video_path'=> $l->video_path,
-                'video_url' => $l->video_url,
-            ])->values()->all(),
-            'newLesson'=> [
-                'title'          => '',
-                'type'           => 'video',
-                'content'        => '',
-                'video_url'      => '',
-                'duration'       => '',
-                'is_free'        => false,
-                'videoFile'      => null,
-                'uploadProgress' => 0,
-                'uploading'      => false,
-                'error'          => '',
-            ],
-        ])->values()->all()),
+       chapters: @json($chaptersJson),
 
         csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
 
@@ -644,19 +615,28 @@ function courseEdit() {
                     if (e.lengthComputable) nl.uploadProgress = Math.round((e.loaded / e.total) * 100);
                 };
 
-                xhr.onload = () => {
-                    nl.uploading = false;
-                    nl.uploadProgress = 0;
-                    const data = JSON.parse(xhr.responseText);
-                    if (data.success) {
-                        chapter.lessons.push(data.lesson);
-                        nl.title = ''; nl.content = ''; nl.video_url = '';
-                        nl.duration = ''; nl.is_free = false; nl.videoFile = null;
-                    } else {
-                        nl.error = 'Erreur lors de l\'ajout de la leçon.';
-                    }
-                };
+               xhr.onload = () => {
+    nl.uploading = false;
+    nl.uploadProgress = 0;
 
+    const data = JSON.parse(xhr.responseText);
+    console.log(data); // 🔥 IMPORTANT
+
+    if (data.success) {
+        chapter.lessons.push(data.lesson);
+
+        // reset form
+        nl.title = '';
+        nl.content = '';
+        nl.video_url = '';
+        nl.duration = '';
+        nl.is_free = false;
+        nl.videoFile = null;
+
+    } else {
+        nl.error = JSON.stringify(data.errors || data.message);
+    }
+};
                 xhr.onerror = () => { nl.uploading = false; nl.error = 'Erreur réseau.'; };
                 xhr.send(formData);
 
